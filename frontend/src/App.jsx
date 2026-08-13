@@ -1,122 +1,143 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import api from './services/api';
+import Navbar from './components/Navbar';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import BorrowerDashboard from './pages/BorrowerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import LoanDetail from './pages/LoanDetail';
+import ApplyLoan from './pages/ApplyLoan';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await api.auth.getMe();
+          setUser(userData);
+        } catch (err) {
+          console.warn('Session verification failed, logging out:', err.message);
+          handleLogout();
+        }
+      }
+      setLoading(false);
+    };
+
+    verifySession();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.loadingScreen}>
+        <div style={styles.spinner}></div>
+        <span style={styles.loadingText}>Initializing Micro-Loan Tracker...</span>
+      </div>
+    );
+  }
+
+  // Helper route guards
+  const isAuthenticated = !!user;
+  const isBorrower = user?.role === 'borrower';
+  const isAdmin = user?.role === 'admin';
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={styles.appWrapper}>
+      {/* Conditionally show Navbar only on pages when authenticated */}
+      {isAuthenticated && <Navbar user={user} onLogout={handleLogout} />}
 
-      <div className="ticks"></div>
+      <main style={styles.mainContent}>
+        <Routes>
+          {/* Public Routes */}
+          <Route 
+            path="/" 
+            element={isAuthenticated ? (isAdmin ? <Navigate to="/admin" /> : <Navigate to="/borrower" />) : <Landing />} 
+          />
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? (isAdmin ? <Navigate to="/admin" /> : <Navigate to="/borrower" />) : <Login onLoginSuccess={setUser} />} 
+          />
+          <Route 
+            path="/register" 
+            element={isAuthenticated ? (isAdmin ? <Navigate to="/admin" /> : <Navigate to="/borrower" />) : <Register onLoginSuccess={setUser} />} 
+          />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Borrower Routes */}
+          <Route 
+            path="/borrower" 
+            element={isAuthenticated ? (isBorrower ? <BorrowerDashboard /> : <Navigate to="/admin" />) : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/borrower/apply" 
+            element={isAuthenticated ? (isBorrower ? <ApplyLoan /> : <Navigate to="/admin" />) : <Navigate to="/login" />} 
+          />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
+          {/* Admin Routes */}
+          <Route 
+            path="/admin" 
+            element={isAuthenticated ? (isAdmin ? <AdminDashboard /> : <Navigate to="/borrower" />) : <Navigate to="/login" />} 
+          />
 
-export default App
+          {/* Universal Shared Details Router */}
+          <Route 
+            path="/loans/:id" 
+            element={isAuthenticated ? <LoanDetail user={user} /> : <Navigate to="/login" />} 
+          />
+
+          {/* Fallback Catch-all Route */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+const styles = {
+  appWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  mainContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  loadingScreen: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#03071E', // Dark Navy
+    color: '#F5E0B7', // Warm Cream
+    gap: '20px',
+  },
+  spinner: {
+    width: '50px',
+    height: '50px',
+    border: '5px solid rgba(245, 224, 183, 0.2)',
+    borderTop: '5px solid #F5E0B7',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    letterSpacing: '0.05em',
+  }
+};
+
+export default App;
