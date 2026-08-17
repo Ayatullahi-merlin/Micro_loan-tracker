@@ -1,17 +1,18 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
-const jwtSecret = process.env.JWT_SECRET;
+const jwtSecret =
+  process.env.JWT_SECRET || "your_super_secret_jwt_key_change_me_in_production";
 
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers["authorization"];
   // Expecting format: Bearer <token>
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      error: { message: 'Authentication token required.' }
+      error: { message: "Authentication token required." },
     });
   }
 
@@ -19,7 +20,7 @@ const authenticateToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({
         success: false,
-        error: { message: 'Invalid or expired authentication token.' }
+        error: { message: "Invalid or expired authentication token." },
       });
     }
 
@@ -33,14 +34,14 @@ const requireRole = (role) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        error: { message: 'Authentication required.' }
+        error: { message: "Authentication required." },
       });
     }
 
     if (req.user.role !== role) {
       return res.status(403).json({
         success: false,
-        error: { message: 'Access denied: Unauthorized role.' }
+        error: { message: "Access denied: Unauthorized role." },
       });
     }
 
@@ -50,5 +51,5 @@ const requireRole = (role) => {
 
 module.exports = {
   authenticateToken,
-  requireRole
+  requireRole,
 };
