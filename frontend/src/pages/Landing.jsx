@@ -21,7 +21,7 @@ const Landing = () => {
             Digitalizing Micro-Loan Tracking in <span style={styles.highlight}>Nigeria</span>
           </h1>
           <p style={styles.subtitle}>
-            Replace manual spreadsheets and paper records with a secure, real-time tracking system. 
+            Replace manual spreadsheets and paper records with a secure, real-time tracking system.
             Designed specifically for micro-finance borrowers and loan officers.
           </p>
 
@@ -63,10 +63,10 @@ const Landing = () => {
       </main>
 
       <footer style={styles.footer}>
-        <p>© 2026 Micro-Loan Tracker Capstone. All rights reserved.</p>
-        <p style={{ marginTop: '4px', fontSize: '0.75rem', color: '#94a3b8' }}>
+        <p>© 2026 Micro-Loan Tracker. All rights reserved.</p>
+        {/* <p style={{ marginTop: '4px', fontSize: '0.75rem', color: '#94a3b8' }}>
           Mandatory Project Palette: Primary Navy (#03071E) & Warm Cream (#F5E0B7)
-        </p>
+        </p>   */}
       </footer>
     </div>
   );

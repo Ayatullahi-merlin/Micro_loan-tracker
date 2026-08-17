@@ -127,9 +127,9 @@ describe('Loans API Endpoints', () => {
       const res = await request(app)
         .patch('/api/loans/loan-uuid-111/status')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ 
-          status: 'APPROVED', 
-          approved_amount: 50000, 
+        .send({
+          status: 'APPROVED',
+          approved_amount: 50000,
           due_date: '2026-12-31',
           officer_notes: 'Looks good'
         });
